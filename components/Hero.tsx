@@ -1,13 +1,11 @@
 import React from 'react';
-import { Handshake, ArrowRight, CheckCircle2, Cpu } from 'lucide-react';
+import { Handshake, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 interface HeroProps {
   onCtaClick: () => void;
 }
 
 const Hero: React.FC<HeroProps> = ({ onCtaClick }) => {
-  const frameworks = ["Angular", "Express", "NestJS", "Next.js", "Nuxt", "Parcel", "React", "Vite", "Vue.js"];
-
   return (
     <section className="relative overflow-hidden pt-12 pb-20 px-4 min-h-[90vh] flex flex-col justify-center">
       <div className="max-w-6xl mx-auto w-full">
@@ -51,25 +49,6 @@ const Hero: React.FC<HeroProps> = ({ onCtaClick }) => {
           </div>
         </div>
 
-        {/* Nova seção de tecnologia Hostinger */}
-        <div className="mt-12 px-6">
-          <div className="flex flex-col md:flex-row items-center gap-6 opacity-60 hover:opacity-100 transition-opacity">
-            <div className="flex items-center gap-2 shrink-0">
-              <Cpu className="text-neon" size={20} />
-              <span className="text-xs font-black uppercase tracking-widest text-gray-400">Powered by Hostinger Tech:</span>
-            </div>
-            <div className="flex flex-wrap justify-center md:justify-start gap-x-6 gap-y-3">
-              {frameworks.map((fw) => (
-                <span key={fw} className="text-[11px] font-bold text-gray-500 hover:text-neon transition-colors cursor-default">
-                  {fw}
-                </span>
-              ))}
-            </div>
-          </div>
-          <p className="mt-6 text-[11px] text-gray-600 text-center md:text-left italic">
-            "Atualmente, a MultiCota opera com suporte aos frameworks JavaScript mais conhecidos do mercado, garantindo estabilidade e escalabilidade em servidores Hostinger."
-          </p>
-        </div>
       </div>
     </section>
   );

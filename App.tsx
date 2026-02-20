@@ -154,10 +154,8 @@ function App() {
   };
 
   const handleDeleteSale = async (saleId: string) => {
-    if (window.confirm('Tem certeza que deseja excluir esta venda? Essa ação não pode ser desfeita.')) {
-      setSales(prev => prev.filter(s => s.id !== saleId));
-      await database.sales.delete(saleId);
-    }
+    setSales(prev => prev.filter(s => s.id !== saleId));
+    await database.sales.delete(saleId);
   };
 
   const handleEditSale = (saleId: string) => {

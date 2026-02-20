@@ -12,6 +12,7 @@ import Auth from './components/Auth';
 import Reports from './components/Reports';
 import AdminUsers from './components/AdminUsers';
 import Products from './components/Products';
+import Profile from './components/Profile';
 import { Sale, User } from './types';
 import { Menu, Loader2 } from 'lucide-react';
 import { addMonths, getDueMonth } from './constants';
@@ -317,6 +318,7 @@ function App() {
                <Import onReviewSale={(data) => { setPendingSaleData(data); setActiveTab('add-sale'); }} />
              )}
              {activeTab === 'reports' && <Reports sales={sales} />}
+             {activeTab === 'profile' && currentUser && <Profile currentUser={currentUser} />}
              {activeTab === 'admin-users' && currentUser.role === 'admin' && <AdminUsers users={adminUsersList} />}
            </main>
         </div>

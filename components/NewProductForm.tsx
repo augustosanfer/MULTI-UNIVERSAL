@@ -21,12 +21,29 @@ const NewProductForm: React.FC<NewProductFormProps> = ({ onSave, onCancel, initi
     parking: 0,
     commissionType: 'percentage',
     commissionValue: 0,
+    commissions: {
+      captador: 0,
+      liner: 0,
+      closer: 0,
+      ftb: 0,
+      capFtb: 0
+    },
+    category: '',
     imageUrl: ''
   });
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({
+        ...initialData,
+        commissions: initialData.commissions || {
+          captador: 0,
+          liner: 0,
+          closer: 0,
+          ftb: 0,
+          capFtb: 0
+        }
+      });
     }
   }, [initialData]);
 
@@ -55,6 +72,13 @@ const NewProductForm: React.FC<NewProductFormProps> = ({ onSave, onCancel, initi
       weeks: Number(formData.weeks) || 1,
       bathrooms: Number(formData.bathrooms) || 1,
       parking: Number(formData.parking) || 0,
+      commissions: {
+        captador: Number(formData.commissions?.captador) || 0,
+        liner: Number(formData.commissions?.liner) || 0,
+        closer: Number(formData.commissions?.closer) || 0,
+        ftb: Number(formData.commissions?.ftb) || 0,
+        capFtb: Number(formData.commissions?.capFtb) || 0,
+      }
     };
 
     onSave(sanitizedData);
@@ -82,6 +106,22 @@ const NewProductForm: React.FC<NewProductFormProps> = ({ onSave, onCancel, initi
                 </div>
               </div>
 
+              <div className="col-span-2 md:col-span-1">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Categoria de Preço</label>
+                <div className="relative">
+                  <Hash className="absolute left-4 top-3.5 text-gray-600" size={18} />
+                  <input className="w-full bg-darkBg border border-gray-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-neon outline-none" placeholder="Ex: Faixa 1, Especial..." value={formData.category || ''} onChange={e => setFormData({...formData, category: e.target.value})} />
+                </div>
+              </div>
+
+              <div className="col-span-2 md:col-span-1">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Preço de Tabela (VGV Cota)</label>
+                <div className="relative">
+                  <DollarSign className="absolute left-4 top-3.5 text-gray-600" size={18} />
+                  <input type="number" step="0.01" className="w-full bg-darkBg border border-gray-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-neon outline-none" placeholder="0.00" value={formData.price ?? ''} onChange={e => setFormData({...formData, price: e.target.value ? parseFloat(e.target.value) : 0})} />
+                </div>
+              </div>
+
               <div className="col-span-2">
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Localização</label>
                 <div className="relative">
@@ -90,11 +130,29 @@ const NewProductForm: React.FC<NewProductFormProps> = ({ onSave, onCancel, initi
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Preço de Tabela (VGV)</label>
-                <div className="relative">
-                  <DollarSign className="absolute left-4 top-3.5 text-gray-600" size={18} />
-                  <input type="number" step="0.01" className="w-full bg-darkBg border border-gray-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-neon outline-none" placeholder="0.00" value={formData.price ?? ''} onChange={e => setFormData({...formData, price: e.target.value ? parseFloat(e.target.value) : 0})} />
+              <div className="col-span-2 p-5 bg-darkBg/30 border border-gray-800 rounded-2xl">
+                <label className="block text-xs font-black text-neon uppercase tracking-widest mb-4">Comissões por Cargo (R$ Fixo)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Captador</label>
+                    <input type="number" className="w-full bg-cardBg border border-gray-700 rounded-lg p-2 text-white outline-none focus:border-neon" value={formData.commissions?.captador ?? 0} onChange={e => setFormData({...formData, commissions: {...(formData.commissions as any), captador: parseFloat(e.target.value) || 0}})} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Liner</label>
+                    <input type="number" className="w-full bg-cardBg border border-gray-700 rounded-lg p-2 text-white outline-none focus:border-neon" value={formData.commissions?.liner ?? 0} onChange={e => setFormData({...formData, commissions: {...(formData.commissions as any), liner: parseFloat(e.target.value) || 0}})} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Closer</label>
+                    <input type="number" className="w-full bg-cardBg border border-gray-700 rounded-lg p-2 text-white outline-none focus:border-neon" value={formData.commissions?.closer ?? 0} onChange={e => setFormData({...formData, commissions: {...(formData.commissions as any), closer: parseFloat(e.target.value) || 0}})} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">FTB</label>
+                    <input type="number" className="w-full bg-cardBg border border-gray-700 rounded-lg p-2 text-white outline-none focus:border-neon" value={formData.commissions?.ftb ?? 0} onChange={e => setFormData({...formData, commissions: {...(formData.commissions as any), ftb: parseFloat(e.target.value) || 0}})} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Cap. FTB</label>
+                    <input type="number" className="w-full bg-cardBg border border-gray-700 rounded-lg p-2 text-white outline-none focus:border-neon" value={formData.commissions?.capFtb ?? 0} onChange={e => setFormData({...formData, commissions: {...(formData.commissions as any), capFtb: parseFloat(e.target.value) || 0}})} />
+                  </div>
                 </div>
               </div>
 

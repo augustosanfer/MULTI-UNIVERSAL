@@ -44,6 +44,14 @@ export interface Product {
   parking: number;
   commissionType: 'fixed' | 'percentage';
   commissionValue: number;
+  commissions?: {
+    captador: number;
+    liner: number;
+    closer: number;
+    ftb: number;
+    capFtb: number;
+  };
+  category?: string;
   imageUrl?: string;
   createdAt: string;
 }

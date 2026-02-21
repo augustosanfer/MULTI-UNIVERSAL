@@ -29,7 +29,13 @@ export const database = {
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Erro ao buscar produtos:', error);
+          console.error('Erro ao buscar produtos no Supabase:', error);
+          // Fallback para LocalStorage se a tabela não existir
+          if (error.message.includes('not find the table') || error.code === 'PGRST116') {
+            console.warn('Tabela "products" não encontrada. Usando LocalStorage como fallback.');
+            const localData = localStorage.getItem(LS_KEYS.PRODUCTS);
+            return localData ? JSON.parse(localData) : [];
+          }
           return [];
         }
 
@@ -47,6 +53,8 @@ export const database = {
           parking: row.parking,
           commissionType: row.commission_type,
           commissionValue: row.commission_value,
+          commissions: row.commissions,
+          category: row.category,
           imageUrl: row.image_url,
           createdAt: row.created_at
         }));
@@ -94,6 +102,8 @@ export const database = {
         parking: Number(product.parking) || 0,
         commission_type: product.commissionType,
         commission_value: Number(product.commissionValue) || 0,
+        commissions: product.commissions,
+        category: product.category,
         image_url: product.imageUrl || ''
       };
 
@@ -111,6 +121,27 @@ export const database = {
       }
 
       if (result.error) {
+        console.error('Erro ao salvar no Supabase:', result.error);
+        // Fallback para LocalStorage se a tabela não existir
+        if (result.error.message.includes('not find the table')) {
+          console.warn('Tabela "products" não encontrada. Salvando no LocalStorage.');
+          const localData = localStorage.getItem(LS_KEYS.PRODUCTS);
+          let products: Product[] = localData ? JSON.parse(localData) : [];
+          
+          if (product.id) {
+            products = products.map(p => p.id === product.id ? { ...p, ...product } as Product : p);
+          } else {
+            const newProduct: Product = {
+              ...product,
+              id: Math.random().toString(36).substr(2, 9),
+              userId: userId,
+              createdAt: new Date().toISOString()
+            } as Product;
+            products.unshift(newProduct);
+          }
+          localStorage.setItem(LS_KEYS.PRODUCTS, JSON.stringify(products));
+          return;
+        }
         throw new Error(result.error.message);
       }
     },

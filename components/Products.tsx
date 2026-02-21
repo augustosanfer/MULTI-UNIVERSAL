@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Product } from '../types';
 import { database } from '../services/database';
 import { formatCurrency } from '../constants';
-import { Plus, Home, MapPin, Bed, Bath, Car, Maximize, Trash2, Edit, Loader2, Users } from 'lucide-react';
+import { Plus, Home, MapPin, Bed, Bath, Car, Maximize, Trash2, Edit, Loader2, Users, Upload } from 'lucide-react';
 import NewProductForm from './NewProductForm';
+import * as XLSX from 'xlsx';
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadProducts = async () => {
     setIsLoading(true);
@@ -42,14 +45,9 @@ const Products: React.FC = () => {
   const handleSave = async (productData: Partial<Product>) => {
     setIsSaving(true);
     try {
-      console.log('Iniciando salvamento do produto...');
       await database.products.save(productData);
-      
-      console.log('Salvo com sucesso! Atualizando UI...');
       setShowForm(false);
       setEditingProduct(null);
-      
-      // Recarrega a lista para refletir as mudanças (seja do LocalStorage ou Supabase)
       await loadProducts();
     } catch (error: any) {
       console.error("Erro no fluxo de salvamento:", error);
@@ -59,21 +57,116 @@ const Products: React.FC = () => {
     }
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws) as any[];
+
+        console.log('Dados importados:', data);
+
+        const importedProducts: Partial<Product>[] = data.map(row => {
+          // Mapeamento de colunas (case insensitive e flexível)
+          const getVal = (keys: string[]) => {
+            const key = Object.keys(row).find(k => keys.includes(k.toUpperCase().trim()));
+            return key ? row[key] : null;
+          };
+
+          const title = getVal(['EMPREENDIMENTO', 'PROJETO', 'NOME']);
+          const category = getVal(['CATEGORIA DE PREÇO', 'CATEGORIA', 'TIPO']);
+          const price = parseFloat(String(getVal(['VGV COTA', 'PRECO', 'VALOR']) || '0').replace(/[^\d,.-]/g, '').replace(',', '.'));
+          
+          const captador = parseFloat(String(getVal(['CAPTADOR']) || '0').replace(/[^\d,.-]/g, '').replace(',', '.'));
+          const liner = parseFloat(String(getVal(['LINER']) || '0').replace(/[^\d,.-]/g, '').replace(',', '.'));
+          const closer = parseFloat(String(getVal(['CLOSER']) || '0').replace(/[^\d,.-]/g, '').replace(',', '.'));
+          const ftb = parseFloat(String(getVal(['FTB']) || '0').replace(/[^\d,.-]/g, '').replace(',', '.'));
+          const capFtb = parseFloat(String(getVal(['CAP.FTB', 'CAP FTB']) || '0').replace(/[^\d,.-]/g, '').replace(',', '.'));
+
+          return {
+            title: title || 'Produto Importado',
+            category: category || '',
+            price: price || 0,
+            commissionType: 'fixed', // Assumindo fixo conforme os valores de VGV Cota
+            commissionValue: captador + liner + closer + ftb + capFtb, // Soma total para compatibilidade
+            commissions: {
+              captador,
+              liner,
+              closer,
+              ftb,
+              capFtb
+            },
+            location: 'Importado',
+            bedrooms: 1,
+            weeks: 1,
+            capacity: 4,
+            area: 0,
+            bathrooms: 1,
+            parking: 0
+          };
+        });
+
+        // Salvar todos os produtos
+        for (const p of importedProducts) {
+          await database.products.save(p);
+        }
+
+        alert(`${importedProducts.length} produtos importados com sucesso!`);
+        await loadProducts();
+      } catch (error) {
+        console.error('Erro ao processar arquivo:', error);
+        alert('Erro ao processar o arquivo Excel. Verifique o formato.');
+      } finally {
+        setIsImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-6 md:p-10 pb-20">
-      <div className="flex justify-between items-center mb-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
         <div>
           <h2 className="text-3xl font-bold text-white flex items-center gap-3">
             <Home className="text-neon" size={32} /> Meus Produtos
           </h2>
           <p className="text-gray-400 mt-1">Cadastre e gerencie seus empreendimentos de multipropriedade.</p>
         </div>
-        <button 
-          onClick={() => { setEditingProduct(null); setShowForm(true); }}
-          className="bg-neon text-darkBg font-bold px-6 py-3 rounded-xl flex items-center gap-2 hover:scale-105 transition-all shadow-[0_0_20px_rgba(124,255,79,0.3)]"
-        >
-          <Plus size={20} /> Novo Produto
-        </button>
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            accept=".xlsx, .xls, .csv" 
+            className="hidden" 
+          />
+          <button 
+            onClick={handleImportClick}
+            disabled={isImporting}
+            className="flex-1 md:flex-none bg-gray-800 text-white font-bold px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-700 transition-all border border-gray-700"
+          >
+            {isImporting ? <Loader2 size={20} className="animate-spin" /> : <Upload size={20} />}
+            Importar Produto
+          </button>
+          <button 
+            onClick={() => { setEditingProduct(null); setShowForm(true); }}
+            className="flex-1 md:flex-none bg-neon text-darkBg font-bold px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-[0_0_20px_rgba(124,255,79,0.3)]"
+          >
+            <Plus size={20} /> Novo Produto
+          </button>
+        </div>
       </div>
 
       {isLoading && products.length === 0 ? (
@@ -122,13 +215,35 @@ const Products: React.FC = () => {
 
                 <div className="mb-6">
                   <p className="text-2xl font-black text-neon">{formatCurrency(product.price)}</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Comissão:</span>
-                    <span className="text-xs font-black text-white bg-white/5 px-2 py-0.5 rounded border border-white/10">
-                      {product.commissionType === 'percentage' 
-                        ? `${product.commissionValue}% (${formatCurrency((product.price * product.commissionValue) / 100)})` 
-                        : formatCurrency(product.commissionValue)}
-                    </span>
+                  <div className="mt-2 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Comissão Geral:</span>
+                      <span className="text-xs font-black text-white bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                        {product.commissionType === 'percentage' 
+                          ? `${product.commissionValue}% (${formatCurrency((product.price * product.commissionValue) / 100)})` 
+                          : formatCurrency(product.commissionValue)}
+                      </span>
+                    </div>
+                    {product.commissions && (
+                      <div className="grid grid-cols-2 gap-2 mt-3 p-3 bg-darkBg/40 rounded-xl border border-gray-800">
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-gray-500 uppercase font-black">Captador</span>
+                          <span className="text-[10px] font-bold text-white">{formatCurrency(product.commissions.captador)}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-gray-500 uppercase font-black">Liner</span>
+                          <span className="text-[10px] font-bold text-white">{formatCurrency(product.commissions.liner)}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-gray-500 uppercase font-black">Closer</span>
+                          <span className="text-[10px] font-bold text-white">{formatCurrency(product.commissions.closer)}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] text-neon/60 uppercase font-black">FTB</span>
+                          <span className="text-[10px] font-black text-neon">{formatCurrency(product.commissions.ftb)}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

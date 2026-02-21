@@ -108,12 +108,27 @@ const NewSaleForm: React.FC<NewSaleFormProps> = ({ onSave, onCancel, initialData
 
   // Cálculo da comissão baseado na regra do produto
   const calculateCommissionTotal = () => {
+    const prod = availableProducts.find(p => p.id === selectedProjectId);
+    
+    // Se o produto tiver comissões específicas por cargo, usa elas
+    if (prod && prod.commissions) {
+      let specificComm = 0;
+      switch (role) {
+        case RoleType.CAPTADOR: specificComm = prod.commissions.captador; break;
+        case RoleType.LINER: specificComm = prod.commissions.liner; break;
+        case RoleType.CLOSER: specificComm = prod.commissions.closer; break;
+        case RoleType.FTB: specificComm = prod.commissions.ftb; break;
+      }
+      
+      if (specificComm > 0) return specificComm * quotaQty;
+    }
+
     const baseValue = commissionRule.type === 'percentage' ? (parseFloat(tableValue) || 0) : 1;
     const unitCommission = commissionRule.type === 'percentage' 
       ? (baseValue * (commissionRule.value / 100)) 
       : commissionRule.value;
     
-    // Regra solicitada: LINER, CLOSER e CAPTADOR recebem o valor base. FTB recebe o dobro.
+    // Regra padrão: LINER, CLOSER e CAPTADOR recebem o valor base. FTB recebe o dobro.
     const multiplier = role === RoleType.FTB ? 2 : 1;
     return unitCommission * multiplier * quotaQty;
   };

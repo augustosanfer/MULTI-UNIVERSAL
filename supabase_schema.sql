@@ -2,12 +2,15 @@
 create table if not exists public.sales (
   id text primary key,
   user_id uuid not null references auth.users(id),
+  user_name text, -- Nome do vendedor para relatórios rápidos
   client_name text not null,
   sale_date date not null,
   project text,
+  role text, -- FTB, LINER, CLOSER, CAPTADOR
   sale_value numeric,
   commission_total numeric,
-  raw_data jsonb, 
+  raw_data jsonb, -- Dados brutos da importação
+  observation text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -26,6 +29,8 @@ create table if not exists public.products (
   parking integer default 0,
   commission_type text check (commission_type in ('fixed', 'percentage')),
   commission_value numeric not null,
+  commissions jsonb, -- NOVO: {captador, liner, closer, ftb, capFtb}
+  category text,    -- NOVO: Categoria de preço
   image_url text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );

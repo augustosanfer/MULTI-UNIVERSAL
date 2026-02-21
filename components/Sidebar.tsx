@@ -16,6 +16,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onLogout, isM
     { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
     { id: 'products', label: 'Produtos', icon: Home },
     { id: 'clients', label: 'Clientes e Vendas', icon: Users },
+    { id: 'captadores', label: 'Captadores', icon: Handshake },
     { id: 'cashflow', label: 'Fluxo de Recebimento', icon: CalendarClock },
     { id: 'add-sale', label: 'Adicionar Venda', icon: PlusCircle },
     { id: 'import', label: 'Importar Arquivo', icon: UploadCloud },

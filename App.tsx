@@ -1,20 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Pricing from './components/Pricing';
-import Dashboard from './components/Dashboard';
-import NewSaleForm from './components/NewSaleForm';
-import Sidebar from './components/Sidebar';
-import Clients from './components/Clients';
-import CashFlow from './components/CashFlow';
-import Import from './components/Import';
 import Auth from './components/Auth';
-import Reports from './components/Reports';
-import AdminUsers from './components/AdminUsers';
-import Products from './components/Products';
-import Profile from './components/Profile';
-import Subscription from './components/Subscription';
 import CheckoutForm from './components/CheckoutForm';
+import Sidebar from './components/Sidebar';
+
+// Lazy loading components for better performance
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const NewSaleForm = lazy(() => import('./components/NewSaleForm'));
+const Clients = lazy(() => import('./components/Clients'));
+const CashFlow = lazy(() => import('./components/CashFlow'));
+const Import = lazy(() => import('./components/Import'));
+const Reports = lazy(() => import('./components/Reports'));
+const AdminUsers = lazy(() => import('./components/AdminUsers'));
+const Products = lazy(() => import('./components/Products'));
+const Profile = lazy(() => import('./components/Profile'));
+const Subscription = lazy(() => import('./components/Subscription'));
+const Captadores = lazy(() => import('./components/Captadores'));
+
 import { Sale, User } from './types';
 import { Menu, Loader2 } from 'lucide-react';
 import { addMonths, getDueMonth } from './constants';
@@ -294,24 +298,35 @@ function App() {
                 <strong className="text-white">MultiCota</strong>
                 <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-400"><Menu /></button>
              </div>
-             {activeTab === 'dashboard' && <Dashboard sales={sales} />}
-             {activeTab === 'products' && <Products />}
-             {activeTab === 'clients' && (
-               <Clients sales={sales} onDeleteSale={handleDeleteSale} onToggleStatus={handleToggleEntryStatus} onBlockEntry={handleBlockEntry} onEditSale={handleEditSale} />
-             )}
-             {activeTab === 'cashflow' && (
-               <CashFlow sales={sales} onToggleStatus={handleToggleEntryStatus} onDeleteEntry={handleDeleteEntry} onEditEntryAmount={handleEditEntryAmount} onRescheduleEntry={handleRescheduleEntry} />
-             )}
-             {activeTab === 'add-sale' && (
-               <NewSaleForm onSave={handleSaveSale} onCancel={() => { setActiveTab('dashboard'); setPendingSaleData(null); }} initialData={pendingSaleData} />
-             )}
-             {activeTab === 'import' && (
-               <Import onReviewSale={(data) => { setPendingSaleData(data); setActiveTab('add-sale'); }} />
-             )}
-             {activeTab === 'reports' && <Reports sales={sales} />}
-             {activeTab === 'subscription' && currentUser && <Subscription currentUser={currentUser} />}
-             {activeTab === 'profile' && currentUser && <Profile currentUser={currentUser} />}
-             {activeTab === 'admin-users' && currentUser.role === 'admin' && <AdminUsers users={adminUsersList} />}
+
+             <Suspense fallback={
+               <div className="flex-1 flex items-center justify-center bg-darkBg h-full">
+                 <div className="text-center">
+                   <Loader2 className="animate-spin text-neon mx-auto mb-4" size={40} />
+                   <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Carregando módulo...</p>
+                 </div>
+               </div>
+             }>
+               {activeTab === 'dashboard' && <Dashboard sales={sales} />}
+               {activeTab === 'captadores' && <Captadores sales={sales} />}
+               {activeTab === 'products' && <Products />}
+               {activeTab === 'clients' && (
+                 <Clients sales={sales} onDeleteSale={handleDeleteSale} onToggleStatus={handleToggleEntryStatus} onBlockEntry={handleBlockEntry} onEditSale={handleEditSale} />
+               )}
+               {activeTab === 'cashflow' && (
+                 <CashFlow sales={sales} onToggleStatus={handleToggleEntryStatus} onDeleteEntry={handleDeleteEntry} onEditEntryAmount={handleEditEntryAmount} onRescheduleEntry={handleRescheduleEntry} />
+               )}
+               {activeTab === 'add-sale' && (
+                 <NewSaleForm onSave={handleSaveSale} onCancel={() => { setActiveTab('dashboard'); setPendingSaleData(null); }} initialData={pendingSaleData} />
+               )}
+               {activeTab === 'import' && (
+                 <Import onReviewSale={(data) => { setPendingSaleData(data); setActiveTab('add-sale'); }} />
+               )}
+               {activeTab === 'reports' && <Reports sales={sales} />}
+               {activeTab === 'subscription' && currentUser && <Subscription currentUser={currentUser} />}
+               {activeTab === 'profile' && currentUser && <Profile currentUser={currentUser} />}
+               {activeTab === 'admin-users' && currentUser.role === 'admin' && <AdminUsers users={adminUsersList} />}
+             </Suspense>
            </main>
         </div>
       )}

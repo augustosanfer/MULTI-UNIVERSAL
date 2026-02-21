@@ -28,33 +28,38 @@ const Dashboard: React.FC<DashboardProps> = ({ sales }) => {
     });
   }, [sales, startDate, endDate]);
 
-  const vgvBruto = filteredSales.reduce((acc, s) => acc + s.saleValue, 0);
-  const vgvLiquido = filteredSales.reduce((acc, s) => isSaleCancelled(s) ? acc : acc + s.saleValue, 0);
-  
+  const { vgvBruto, vgvLiquido, totalQuotasInPeriod, cancelledSalesCount, cancellationRate } = useMemo(() => {
+    const bruto = filteredSales.reduce((acc, s) => acc + s.saleValue, 0);
+    const liquido = filteredSales.reduce((acc, s) => isSaleCancelled(s) ? acc : acc + s.saleValue, 0);
+    const quotas = filteredSales.reduce((acc, s) => isSaleCancelled(s) ? acc : acc + (s.quotaQty || 1), 0);
+    const cancelledCount = filteredSales.filter(isSaleCancelled).length;
+    const rate = filteredSales.length > 0 ? (cancelledCount / filteredSales.length) * 100 : 0;
+    
+    return { vgvBruto: bruto, vgvLiquido: liquido, totalQuotasInPeriod: quotas, cancelledSalesCount: cancelledCount, cancellationRate: rate };
+  }, [filteredSales]);
+
   const allEntries = useMemo(() => sales.flatMap(s => s.commissionEntries).filter(e => e.status !== 'cancelled'), [sales]);
-  const receiptsInPeriod = allEntries.filter(e => e.dueDate >= startDate && e.dueDate <= endDate).reduce((acc, e) => acc + e.amount, 0);
-
-  const futureCash = allEntries.filter(e => {
-    const today = new Date().toISOString().split('T')[0];
-    return e.dueDate > today;
-  }).reduce((acc, e) => acc + e.amount, 0);
-
-  const totalQuotasInPeriod = filteredSales.reduce((acc, s) => {
-    return isSaleCancelled(s) ? acc : acc + (s.quotaQty || 1);
-  }, 0);
-
-  const cancelledSalesCount = filteredSales.filter(isSaleCancelled).length;
-  const cancellationRate = filteredSales.length > 0 ? (cancelledSalesCount / filteredSales.length) * 100 : 0;
   
-  const gaugeColor = cancellationRate >= 30 ? '#EF4444' : '#7CFF4F';
-  const gaugeData = [{ name: 'Rate', value: Math.min(cancellationRate, 100) }, { name: 'Remaining', value: Math.max(0, 100 - cancellationRate) }];
+  const { receiptsInPeriod, futureCash } = useMemo(() => {
+    const receipts = allEntries.filter(e => e.dueDate >= startDate && e.dueDate <= endDate).reduce((acc, e) => acc + e.amount, 0);
+    const today = new Date().toISOString().split('T')[0];
+    const future = allEntries.filter(e => e.dueDate > today).reduce((acc, e) => acc + e.amount, 0);
+    
+    return { receiptsInPeriod: receipts, futureCash: future };
+  }, [allEntries, startDate, endDate]);
 
-  const productivityData = [
+  const gaugeColor = cancellationRate >= 30 ? '#EF4444' : '#7CFF4F';
+  const gaugeData = useMemo(() => [
+    { name: 'Rate', value: Math.min(cancellationRate, 100) }, 
+    { name: 'Remaining', value: Math.max(0, 100 - cancellationRate) }
+  ], [cancellationRate]);
+
+  const productivityData = useMemo(() => [
     { name: 'FTB', value: filteredSales.filter(s => s.role === RoleType.FTB && !isSaleCancelled(s)).length },
     { name: 'LINER', value: filteredSales.filter(s => s.role === RoleType.LINER && !isSaleCancelled(s)).length },
     { name: 'CLOSER', value: filteredSales.filter(s => s.role === RoleType.CLOSER && !isSaleCancelled(s)).length },
     { name: 'CAPTADOR', value: filteredSales.filter(s => s.role === RoleType.CAPTADOR && !isSaleCancelled(s)).length },
-  ];
+  ], [filteredSales]);
 
   return (
     <div className="max-w-[1600px] mx-auto p-6 md:p-10 pb-20">

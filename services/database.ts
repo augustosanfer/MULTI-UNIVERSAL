@@ -31,7 +31,7 @@ export const database = {
         if (error) {
           console.error('Erro ao buscar produtos no Supabase:', error);
           // Fallback para LocalStorage se a tabela não existir
-          if (error.message.includes('not find the table') || error.code === 'PGRST116') {
+          if (error.message?.includes('not find the table') || error.code === 'PGRST116') {
             console.warn('Tabela "products" não encontrada. Usando LocalStorage como fallback.');
             const localData = localStorage.getItem(LS_KEYS.PRODUCTS);
             return localData ? JSON.parse(localData) : [];
@@ -123,7 +123,7 @@ export const database = {
       if (result.error) {
         console.error('Erro ao salvar no Supabase:', result.error);
         // Fallback para LocalStorage se a tabela não existir
-        if (result.error.message.includes('not find the table')) {
+        if (result.error.message?.includes('not find the table')) {
           console.warn('Tabela "products" não encontrada. Salvando no LocalStorage.');
           const localData = localStorage.getItem(LS_KEYS.PRODUCTS);
           let products: Product[] = localData ? JSON.parse(localData) : [];

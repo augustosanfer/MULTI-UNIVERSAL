@@ -5,19 +5,17 @@ import Pricing from './components/Pricing';
 import Auth from './components/Auth';
 import CheckoutForm from './components/CheckoutForm';
 import Sidebar from './components/Sidebar';
-
-// Lazy loading components for better performance
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const NewSaleForm = lazy(() => import('./components/NewSaleForm'));
-const Clients = lazy(() => import('./components/Clients'));
-const CashFlow = lazy(() => import('./components/CashFlow'));
-const Import = lazy(() => import('./components/Import'));
-const Reports = lazy(() => import('./components/Reports'));
-const AdminUsers = lazy(() => import('./components/AdminUsers'));
-const Products = lazy(() => import('./components/Products'));
-const Profile = lazy(() => import('./components/Profile'));
-const Subscription = lazy(() => import('./components/Subscription'));
-const Captadores = lazy(() => import('./components/Captadores'));
+import Dashboard from './components/Dashboard';
+import NewSaleForm from './components/NewSaleForm';
+import Clients from './components/Clients';
+import CashFlow from './components/CashFlow';
+import Import from './components/Import';
+import Reports from './components/Reports';
+import AdminUsers from './components/AdminUsers';
+import Products from './components/Products';
+import Profile from './components/Profile';
+import Subscription from './components/Subscription';
+import Captadores from './components/Captadores';
 
 import { Sale, User } from './types';
 import { Menu, Loader2 } from 'lucide-react';

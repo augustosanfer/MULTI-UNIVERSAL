@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Users, CalendarClock, PlusCircle, UploadCloud, LogOut, Handshake, Shield, FileBarChart, Home, User as UserIcon } from 'lucide-react';
+import { LayoutGrid, Users, CalendarClock, PlusCircle, UploadCloud, LogOut, Handshake, Shield, FileBarChart, Home, User as UserIcon, CreditCard } from 'lucide-react';
 import { User } from '../types';
 
 interface SidebarProps {
@@ -20,6 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onLogout, isM
     { id: 'add-sale', label: 'Adicionar Venda', icon: PlusCircle },
     { id: 'import', label: 'Importar Arquivo', icon: UploadCloud },
     { id: 'reports', label: 'Relatórios', icon: FileBarChart },
+    { id: 'subscription', label: 'Assinatura', icon: CreditCard },
     { id: 'profile', label: 'Meu Perfil', icon: UserIcon },
   ];
   if (currentUser?.role === 'admin') {

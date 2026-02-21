@@ -1,15 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import { Sale } from '../types';
+import { Sale, RoleType } from '../types';
 import { formatCurrency } from '../constants';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { DollarSign, Wallet, TrendingUp, Layers, Calendar, Filter, History } from 'lucide-react';
 
 interface DashboardProps {
   sales: Sale[];
-  onAddSale: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ sales, onAddSale }) => {
+const Dashboard: React.FC<DashboardProps> = ({ sales }) => {
   // Período padrão solicitado: 01/01/2026 até 31/12/2026
   const [startDate, setStartDate] = useState('2026-01-01');
   const [endDate, setEndDate] = useState('2026-12-31');
@@ -51,9 +50,10 @@ const Dashboard: React.FC<DashboardProps> = ({ sales, onAddSale }) => {
   const gaugeData = [{ name: 'Rate', value: Math.min(cancellationRate, 100) }, { name: 'Remaining', value: Math.max(0, 100 - cancellationRate) }];
 
   const productivityData = [
-    { name: 'FTB', value: filteredSales.filter(s => s.role === 'FTB' && !isSaleCancelled(s)).length },
-    { name: 'LINER', value: filteredSales.filter(s => s.role === 'LINER' && !isSaleCancelled(s)).length },
-    { name: 'CLOSER', value: filteredSales.filter(s => s.role === 'CLOSER' && !isSaleCancelled(s)).length },
+    { name: 'FTB', value: filteredSales.filter(s => s.role === RoleType.FTB && !isSaleCancelled(s)).length },
+    { name: 'LINER', value: filteredSales.filter(s => s.role === RoleType.LINER && !isSaleCancelled(s)).length },
+    { name: 'CLOSER', value: filteredSales.filter(s => s.role === RoleType.CLOSER && !isSaleCancelled(s)).length },
+    { name: 'CAPTADOR', value: filteredSales.filter(s => s.role === RoleType.CAPTADOR && !isSaleCancelled(s)).length },
   ];
 
   return (

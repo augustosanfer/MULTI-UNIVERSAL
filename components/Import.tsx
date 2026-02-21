@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, FileText, Image, FileSpreadsheet, X, Check, Loader2, AlertCircle } from 'lucide-react';
+import { UploadCloud, Check, Loader2 } from 'lucide-react';
 import { Sale, RoleType, UnitType } from '../types';
 
 interface ImportProps {
@@ -42,7 +42,6 @@ const Import: React.FC<ImportProps> = ({ onReviewSale }) => {
   };
 
   const handleReviewClick = () => { if (extractedData) onReviewSale(extractedData); };
-  const clearFile = () => { setSelectedFile(null); setProcessStatus('idle'); setExtractedData(null); if (fileInputRef.current) fileInputRef.current.value = ''; };
 
   return (
     <div className="max-w-4xl mx-auto p-6 md:p-10 pb-20">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Pricing from './components/Pricing';
@@ -13,6 +13,8 @@ import Reports from './components/Reports';
 import AdminUsers from './components/AdminUsers';
 import Products from './components/Products';
 import Profile from './components/Profile';
+import Subscription from './components/Subscription';
+import CheckoutForm from './components/CheckoutForm';
 import { Sale, User } from './types';
 import { Menu, Loader2 } from 'lucide-react';
 import { addMonths, getDueMonth } from './constants';
@@ -23,11 +25,12 @@ function App() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: number } | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pendingSaleData, setPendingSaleData] = useState<Partial<Sale> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [adminUsersList, setAdminUsersList] = useState<User[]>([]);
+  const [adminUsersList] = useState<User[]>([]);
 
   // Verifica a sessão ao iniciar
   useEffect(() => {
@@ -46,6 +49,8 @@ function App() {
             name: session.user.user_metadata.name || 'Usuário',
             role: 'user',
             subscriptionStatus: 'active',
+            subscriptionDate: session.user.created_at,
+            expirationDate: new Date(new Date(session.user.created_at).setFullYear(new Date(session.user.created_at).getFullYear() + 1)).toISOString(),
             createdAt: session.user.created_at
           };
           
@@ -78,6 +83,8 @@ function App() {
             name: session.user.user_metadata.name || 'Usuário',
             role: 'user',
             subscriptionStatus: 'active',
+            subscriptionDate: session.user.created_at,
+            expirationDate: new Date(new Date(session.user.created_at).setFullYear(new Date(session.user.created_at).getFullYear() + 1)).toISOString(),
             createdAt: session.user.created_at
         };
         if (appUser.email.includes('admin')) { appUser.role = 'admin'; }
@@ -102,26 +109,18 @@ function App() {
     }
   };
 
-  const handleLoginClick = async () => {
-    // LOGIN AUTOMÁTICO - BYPASS
-    const guestUser: User = {
-      id: '00000000-0000-0000-0000-000000000000',
-      name: 'Corretor Convidado',
-      email: 'convidado@multicota.com',
-      role: 'user',
-      subscriptionStatus: 'active',
-      createdAt: new Date().toISOString()
-    };
-    setCurrentUser(guestUser);
-    setActiveTab('dashboard');
-    setIsLoading(true);
-    await loadSales();
-    setIsLoading(false);
+  const handleLoginClick = () => {
+    setShowAuthModal(true);
   };
   
   const handleAuthSuccess = async (user: User) => {
     if (user.email.includes('admin')) user.role = 'admin';
-    setCurrentUser(user);
+    const userWithDates = {
+      ...user,
+      subscriptionDate: user.subscriptionDate || user.createdAt,
+      expirationDate: user.expirationDate || new Date(new Date(user.createdAt).setFullYear(new Date(user.createdAt).getFullYear() + 1)).toISOString()
+    };
+    setCurrentUser(userWithDates);
     setShowAuthModal(false);
     setActiveTab('dashboard');
     await loadSales();
@@ -237,22 +236,6 @@ function App() {
     }
   };
 
-  const handleCancelSale = (saleId: string) => {
-    if (window.confirm('VENDA CANCELADA (7 DIAS)?\n\nIsso irá cancelar todos os pagamentos previstos para esta venda e removê-los do fluxo de caixa.')) {
-      const sale = sales.find(s => s.id === saleId);
-      if (!sale) return;
-
-      const updatedSale = {
-        ...sale,
-        commissionEntries: sale.commissionEntries.map(entry => ({
-          ...entry,
-          status: 'cancelled' as const
-        }))
-      };
-      updateSaleAndPersist(updatedSale);
-    }
-  };
-
   const handleBlockEntry = (saleId: string, entryId: string) => {
     const sale = sales.find(s => s.id === saleId);
     if (!sale) return;
@@ -283,9 +266,19 @@ function App() {
         <>
           <Header isLoggedIn={false} onLoginClick={handleLoginClick} onLogout={() => {}} />
           <main>
-            <Hero onCtaClick={handleLoginClick} />
-            <Pricing onChoosePlan={handleLoginClick} />
+            <Hero onCtaClick={() => setSelectedPlan({ name: 'Pro', price: 19.90 })} />
+            <Pricing onChoosePlan={(plan) => setSelectedPlan(plan)} />
           </main>
+          {selectedPlan && (
+            <CheckoutForm 
+              plan={selectedPlan} 
+              onCancel={() => setSelectedPlan(null)} 
+              onSuccess={() => {
+                setSelectedPlan(null);
+                setShowAuthModal(true);
+              }} 
+            />
+          )}
           {showAuthModal && (
             <Auth onSuccess={handleAuthSuccess} onCancel={() => setShowAuthModal(false)} />
           )}
@@ -301,10 +294,10 @@ function App() {
                 <strong className="text-white">MultiCota</strong>
                 <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-400"><Menu /></button>
              </div>
-             {activeTab === 'dashboard' && <Dashboard sales={sales} onAddSale={() => setActiveTab('add-sale')} />}
+             {activeTab === 'dashboard' && <Dashboard sales={sales} />}
              {activeTab === 'products' && <Products />}
              {activeTab === 'clients' && (
-               <Clients sales={sales} onDeleteSale={handleDeleteSale} onToggleStatus={handleToggleEntryStatus} onCancelSale={handleCancelSale} onBlockEntry={handleBlockEntry} onEditSale={handleEditSale} />
+               <Clients sales={sales} onDeleteSale={handleDeleteSale} onToggleStatus={handleToggleEntryStatus} onBlockEntry={handleBlockEntry} onEditSale={handleEditSale} />
              )}
              {activeTab === 'cashflow' && (
                <CashFlow sales={sales} onToggleStatus={handleToggleEntryStatus} onDeleteEntry={handleDeleteEntry} onEditEntryAmount={handleEditEntryAmount} onRescheduleEntry={handleRescheduleEntry} />
@@ -316,6 +309,7 @@ function App() {
                <Import onReviewSale={(data) => { setPendingSaleData(data); setActiveTab('add-sale'); }} />
              )}
              {activeTab === 'reports' && <Reports sales={sales} />}
+             {activeTab === 'subscription' && currentUser && <Subscription currentUser={currentUser} />}
              {activeTab === 'profile' && currentUser && <Profile currentUser={currentUser} />}
              {activeTab === 'admin-users' && currentUser.role === 'admin' && <AdminUsers users={adminUsersList} />}
            </main>

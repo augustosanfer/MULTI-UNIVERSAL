@@ -113,10 +113,8 @@ const NewSaleForm: React.FC<NewSaleFormProps> = ({ onSave, onCancel, initialData
       ? (baseValue * (commissionRule.value / 100)) 
       : commissionRule.value;
     
-    // Se for Liner ou Closer, geralmente é metade da comissão total (FTB)
-    // Se o usuário quiser customizar isso, precisaremos de campos extras. 
-    // Por padrão, manteremos a lógica: FTB = 100%, LINER/CLOSER = 50% da regra do produto
-    const multiplier = role === RoleType.FTB ? 1 : 0.5;
+    // Regra solicitada: LINER, CLOSER e CAPTADOR recebem o valor base. FTB recebe o dobro.
+    const multiplier = role === RoleType.FTB ? 2 : 1;
     return unitCommission * multiplier * quotaQty;
   };
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Check } from 'lucide-react';
 
 interface PricingProps {
-  onChoosePlan: () => void;
+  onChoosePlan: (plan: { name: string; price: number }) => void;
 }
 
 const Pricing: React.FC<PricingProps> = ({ onChoosePlan }) => {
@@ -20,7 +20,7 @@ const Pricing: React.FC<PricingProps> = ({ onChoosePlan }) => {
             <h3 className="text-xl font-bold text-white text-center mb-2">Pro</h3>
             <div className="text-center mb-6"><span className="text-4xl font-extrabold text-neon">R$ 19,90</span><span className="text-gray-500 font-medium">/mês</span></div>
             <p className="text-gray-400 text-sm text-center mb-8 h-10">Para profissionais que buscam agilidade.</p>
-            <button onClick={onChoosePlan} className="w-full py-4 rounded-xl bg-neon text-darkBg font-bold hover:bg-neon/90 transition-all mb-8 shadow-[0_10px_20px_rgba(124,255,79,0.2)]">Escolher Plano</button>
+            <button onClick={() => onChoosePlan({ name: 'Pro', price: 19.90 })} className="w-full py-4 rounded-xl bg-neon text-darkBg font-bold hover:bg-neon/90 transition-all mb-8 shadow-[0_10px_20px_rgba(124,255,79,0.2)]">Escolher Plano</button>
             <div className="space-y-4 flex-1">
               {['Vendas Ilimitadas', 'Cálculo Pro-Rata', 'Fluxo de Caixa', 'Importação', 'Suporte Prioritário'].map((item, i) => (
                 <div key={i} className="flex items-center gap-3 text-sm text-white font-medium"><Check size={18} className="text-neon shrink-0" />{item}</div>
@@ -31,7 +31,7 @@ const Pricing: React.FC<PricingProps> = ({ onChoosePlan }) => {
             <h3 className="text-xl font-bold text-white text-center mb-2">Anual</h3>
             <div className="text-center mb-6"><span className="text-4xl font-extrabold text-neon">R$ 199,90</span><span className="text-gray-500 font-medium">/ano</span></div>
             <p className="text-gray-400 text-sm text-center mb-8 h-10">Economia máxima com acesso total.</p>
-            <button onClick={onChoosePlan} className="w-full py-4 rounded-xl border border-gray-700 text-white font-bold hover:bg-gray-800 transition-all mb-8">Escolher Plano</button>
+            <button onClick={() => onChoosePlan({ name: 'Anual', price: 199.90 })} className="w-full py-4 rounded-xl border border-gray-700 text-white font-bold hover:bg-gray-800 transition-all mb-8">Escolher Plano</button>
             <div className="space-y-4 flex-1">
               {['Tudo do Pro', 'Acesso Anual (12 meses)', 'Relatórios Avançados', 'Exportação Excel', 'Gestão Multi-projetos'].map((item, i) => (
                 <div key={i} className="flex items-center gap-3 text-sm text-gray-300"><Check size={18} className="text-neon shrink-0" />{item}</div>

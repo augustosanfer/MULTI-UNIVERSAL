@@ -1,4 +1,3 @@
-import { RoleType } from './types';
 
 export const addDays = (date: string, days: number): Date => {
   const result = new Date(date);

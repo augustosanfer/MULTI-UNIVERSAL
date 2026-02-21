@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Sale } from '../types';
-import { formatCurrency, PAYMENT_METHOD_LABELS } from '../constants';
+import { formatCurrency } from '../constants';
 import { FileBarChart, Printer, Filter, CalendarCheck } from 'lucide-react';
 
 interface ReportsProps {

@@ -45,3 +45,50 @@ create policy "Users can view their own products" on public.products for select 
 create policy "Users can insert their own products" on public.products for insert with check (auth.uid() = user_id);
 create policy "Users can update their own products" on public.products for update using (auth.uid() = user_id);
 create policy "Users can delete their own products" on public.products for delete using (auth.uid() = user_id);
+
+-- Tabela de Checkouts (Pedidos do Site)
+create table if not exists public.checkouts (
+  id uuid primary key default gen_random_uuid(),
+  customer_name text not null,
+  customer_email text not null,
+  plan_name text not null,
+  amount numeric not null,
+  status text default 'pending',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Habilitar RLS para Checkouts
+alter table public.checkouts enable row level security;
+
+-- Políticas para Checkouts (Público pode inserir, Admin pode ver)
+create policy "Anyone can insert checkouts" on public.checkouts for insert with check (true);
+create policy "Admins can view all checkouts" on public.checkouts for select using (
+  exists (
+    select 1 from auth.users
+    where auth.users.id = auth.uid()
+    and (auth.users.raw_user_meta_data->>'role' = 'admin' or auth.users.email like '%admin%')
+  )
+);
+
+-- Tabela de Pedidos (Orders)
+create table if not exists public.orders (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null,
+  registration_date timestamp with time zone default timezone('utc'::text, now()) not null,
+  subscription_date timestamp with time zone,
+  expiration_date timestamp with time zone,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Habilitar RLS para Orders
+alter table public.orders enable row level security;
+
+-- Políticas para Orders (Admin pode ver tudo)
+create policy "Admins can view all orders" on public.orders for select using (
+  exists (
+    select 1 from auth.users
+    where auth.users.id = auth.uid()
+    and (auth.users.raw_user_meta_data->>'role' = 'admin' or auth.users.email like '%admin%')
+  )
+);

@@ -1,7 +1,8 @@
 export enum RoleType {
   FTB = 'FTB',
   LINER = 'LINER',
-  CLOSER = 'CLOSER'
+  CLOSER = 'CLOSER',
+  CAPTADOR = 'CAPTADOR'
 }
 
 export enum UnitType {
@@ -77,5 +78,7 @@ export interface User {
   password?: string;
   role: 'admin' | 'user';
   subscriptionStatus: 'active' | 'pending' | 'inactive';
+  subscriptionDate?: string;
+  expirationDate?: string;
   createdAt: string;
 }

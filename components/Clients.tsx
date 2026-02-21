@@ -7,12 +7,11 @@ interface ClientsProps {
   sales: Sale[];
   onDeleteSale: (id: string) => void;
   onToggleStatus: (saleId: string, entryId: string) => void;
-  onCancelSale: (saleId: string) => void;
   onBlockEntry: (saleId: string, entryId: string) => void;
   onEditSale: (saleId: string) => void;
 }
 
-const Clients: React.FC<ClientsProps> = ({ sales, onDeleteSale, onToggleStatus, onCancelSale, onBlockEntry, onEditSale }) => {
+const Clients: React.FC<ClientsProps> = ({ sales, onDeleteSale, onToggleStatus, onBlockEntry, onEditSale }) => {
   const [expandedSaleId, setExpandedSaleId] = useState<string | null>(null);
   const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
 

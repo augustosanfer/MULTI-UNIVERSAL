@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Credenciais fornecidas
-const supabaseUrl = 'https://qjqlrrobjfdbzdqhiogu.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFqcWxycm9iamZkYnpkcWhpb2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMjM4NDQsImV4cCI6MjA4NTg5OTg0NH0.moMIjnKzVfrr4aMGCK2ageUjw5Rc8hG_Jzf1uyERuCs';
+// Credenciais do Supabase
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://abqtkyfoicepzwxnuwbn.supabase.co';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_ZnRdVY0AR9flPS7pc6uVng_2edXnS93';
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -37,5 +37,12 @@ export const authService = {
   getCurrentUser: async () => {
     const { data: { user } } = await supabase.auth.getUser();
     return user;
+  },
+
+  resetPassword: async (email: string) => {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return { data, error };
   }
 };

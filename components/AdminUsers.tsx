@@ -1,6 +1,6 @@
 import React from 'react';
 import { User } from '../types';
-import { Shield, CheckCircle, Clock, XCircle, Search } from 'lucide-react';
+import { Shield, CheckCircle, Clock, Search } from 'lucide-react';
 
 interface AdminUsersProps {
   users: User[];

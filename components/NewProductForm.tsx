@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Home, MapPin, DollarSign, Bed, Bath, Car, Maximize, Percent, Hash, Users, Image as ImageIcon } from 'lucide-react';
+import { X, Home, MapPin, DollarSign, Bed, Maximize, Percent, Hash, Users, Image as ImageIcon } from 'lucide-react';
 import { Product } from '../types';
 
 interface NewProductFormProps {
